@@ -1,0 +1,8 @@
+# Enter the hosts or devices for Ansible playbooks 
+[hosts]
+192.168.56.101
+
+
+[hosts:vars]
+ansible_user=cisco 
+ansible_password=cisco123!
