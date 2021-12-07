@@ -1,0 +1,216 @@
+service timestamps debug datetime msec
+service timestamps log datetime msec
+! Call-home is enabled by Smart-Licensing.
+service call-home
+platform qfp utilization monitor load 80
+platform punt-keepalive disable-kernel-core
+platform console virtual
+!
+hostname R2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no logging console
+enable secret 9 $9$7oPyTg4HNYAHLk$WooeAYVE/UPYhpw5CpkYQ5eh12P6EOHm8cctz8MkSDk
+!
+no aaa new-model
+call-home
+ ! If contact email address in call-home is configured as sch-smart-licensing@cisco.com
+ ! the email address configured in Cisco Smart License Portal will be used as contact email address to send SCH notifications.
+ contact-email-addr sch-smart-licensing@cisco.com
+ profile "CiscoTAC-1"
+  active
+  destination transport-method http
+  no destination transport-method email
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name example.netacad.com
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+!
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint TP-self-signed-3999738328
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-3999738328
+ revocation-check none
+ rsakeypair TP-self-signed-3999738328
+!
+crypto pki trustpoint SLA-TrustPoint
+ enrollment pkcs12
+ revocation-check crl
+!
+!
+license udi pid CSR1000V sn 9HEB0L15WP3
+diagnostic bootup level minimal
+memory free low-watermark processor 72329
+!
+!
+spanning-tree extend system-id
+!
+username cisco privilege 15 password 0 cisco123!
+!
+redundancy
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.255
+!
+interface Loopback1
+ ip address 11.2.2.2 255.255.255.0
+!
+interface Loopback2
+ ip address 12.2.2.2 255.255.255.0
+!
+interface GigabitEthernet1
+ description VBox
+ ip address dhcp
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ description R2-G2
+ ip address 192.168.148.102 255.255.255.0
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet3
+ description R2-G3
+ ip address 192.168.157.102 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+router ospf 1
+ router-id 2.2.2.2
+ passive-interface GigabitEthernet1
+ passive-interface Loopback0
+ passive-interface Loopback1
+ passive-interface Loopback2
+ network 0.0.0.0 255.255.255.255 area 1
+!
+router bgp 65002
+ bgp router-id 11.2.2.2
+ bgp log-neighbor-changes
+ neighbor 192.168.148.101 remote-as 65001
+ neighbor 192.168.157.101 remote-as 65001
+ !
+ address-family ipv4
+  network 11.2.2.0 mask 255.255.255.0
+  network 12.2.2.0 mask 255.255.255.0
+  neighbor 192.168.148.101 activate
+  neighbor 192.168.157.101 activate
+ exit-address-family
+!
+ip forward-protocol nd
+no ip http server
+ip http authentication local
+ip http secure-server
+!
+!
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+banner motd ^C
+*                                           *
+**                                         **
+***                                       ***
+***  Cisco Networking Academy             ***
+***                                       ***
+***  This software is provided for        ***
+***   Educational Purposes                ***
+***    Only in Networking Academies       ***
+***                                       ***
+**                                         **
+*                                           *
+^C
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+ stopbits 1
+line vty 0 4
+ login local
+ transport input ssh
+line vty 5 15
+ login local
+ transport input ssh
+!
+!
+!
+!
+!
+!
+netconf-yang
+restconf
+end

@@ -1,0 +1,191 @@
+service timestamps debug datetime msec
+service timestamps log datetime msec
+platform qfp utilization monitor load 80
+no platform punt-keepalive disable-kernel-core
+platform console virtual
+!
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no logging console
+enable secret 5 $1$oNwE$/eYzYS0.ubMZ5XH0BELdM.
+!
+no aaa new-model
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+crypto pki trustpoint TP-self-signed-2319644871
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-2319644871
+ revocation-check none
+ rsakeypair TP-self-signed-2319644871
+!
+!
+!
+!
+!
+!
+!
+!
+license udi pid CSR1000V sn 9Q84EL6LNLU
+no license smart enable
+diagnostic bootup level minimal
+!
+spanning-tree extend system-id
+!
+netconf-yang
+!
+restconf
+!
+username cisco privilege 15 password 0 cisco123!
+!
+redundancy
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+interface Loopback1
+ ip address 11.1.1.1 255.255.255.0
+!
+interface Loopback2
+ ip address 12.1.1.1 255.255.255.0
+!
+interface GigabitEthernet1
+ description VBox
+ ip address dhcp
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ ip address 192.168.148.101 255.255.255.0
+ negotiation auto
+!
+interface GigabitEthernet3
+ description R1-G3
+ ip address 192.168.157.101 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+router ospf 1
+ router-id 1.1.1.1
+ passive-interface GigabitEthernet1
+ passive-interface Loopback0
+ passive-interface Loopback1
+ passive-interface Loopback2
+ network 0.0.0.0 255.255.255.255 area 1
+!
+router bgp 65001
+ bgp router-id 11.1.1.1
+ bgp log-neighbor-changes
+ neighbor 192.168.148.102 remote-as 65002
+ neighbor 192.168.157.102 remote-as 65002
+ !
+ address-family ipv4
+  network 11.1.1.0 mask 255.255.255.0
+  network 12.1.1.0 mask 255.255.255.0
+  neighbor 192.168.148.102 activate
+  neighbor 192.168.157.102 activate
+ exit-address-family
+!
+ip forward-protocol nd
+no ip http server
+ip http authentication local
+ip http secure-server
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+banner motd ^C
+*                                           *
+**                                         **
+***                                       ***
+***  Cisco Networking Academy             ***
+***                                       ***
+***  This software is provided for        ***
+***   Educational Purposes                ***
+***    Only in Networking Academies       ***
+***                                       ***
+**                                         **
+*                                           *
+^C
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+ stopbits 1
+line vty 0 4
+ login local
+ transport input ssh
+line vty 5 15
+ login local
+ transport input ssh
+!
+!
+!
+!
+!
+!
+end

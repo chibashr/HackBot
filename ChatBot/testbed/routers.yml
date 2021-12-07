@@ -1,0 +1,66 @@
+devices:
+  R1:
+    connections:
+      cli:
+        ip: 192.168.56.101
+        protocol: ssh
+    credentials:
+      default:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+        username: cisco
+      enable:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+    os: iosxe
+    type: iosxe
+  R2:
+    connections:
+      cli:
+        ip: 192.168.56.102
+        protocol: ssh
+    credentials:
+      default:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+        username: cisco
+      enable:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+    os: iosxe
+    type: iosxe
+  R3:
+    connections:
+      cli:
+        ip: 192.168.122.10
+        protocol: ssh
+    credentials:
+      default:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+        username: cisco
+      enable:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+    os: iosxe
+    type: iosxe
+  R4:
+    connections:
+      cli:
+        ip: 192.168.122.20
+        protocol: ssh
+    credentials:
+      default:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+        username: cisco
+      enable:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+    os: iosxe
+    type: iosxe
+  R5:
+    connections:
+      cli:
+        ip: 192.168.122.30
+        protocol: ssh
+    credentials:
+      default:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+        username: cisco
+      enable:
+        password: '%ENC{w5PDosOUw5fDosKQwpbCmMKH}'
+    os: iosxe
+    type: iosxe
