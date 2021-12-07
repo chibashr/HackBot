@@ -2,9 +2,14 @@ import threading
 import time
 import json
 import requests
-
+import paramiko
+import ansible_runner
+import fileinput
+import sys
 import xml.dom.minidom
 #from ncclient import manager 
+
+
  
 # To build the table at the end
 from tabulate import tabulate
@@ -19,6 +24,7 @@ import useless_skills as useless
 import useful_skills as useful
 from BGP_Neighbors_Established import BGP_Neighbors_Established
 from Monitor_Interfaces import MonitorInterfaces
+
 
 # Create  thread list
 threads = list()
@@ -39,7 +45,7 @@ headers = {'Content-Type': 'application/yang-data+json',
 # Bot Details
 bot_email = 'HackBot1@webex.bot' #Fill in your Teams Bot email#
 teams_token = 'MzM3ZjI4NzAtYTgwNS00NzNkLThkOTQtMWQ5N2RkM2UwNmIzMzAzZjFmMjItNzkz_PF84_6eaa6071-6263-409c-8486-26bedfbbdc1a' #Fill in your Teams Bot Token#
-bot_url = "http://0fed-97-90-225-173.ngrok.io" #Fill in the ngrok forwarding address#
+bot_url = "http://2df4-68-117-129-239.ngrok.io" #Fill in the ngrok forwarding address#
 bot_app_name = 'CNIT-381 Network Auto Chat Bot for security testing'
 
 # Create a Bot Object
@@ -241,8 +247,55 @@ def edit_loopback(incoming_msg):
     </config> 
     """ 
     
+def checkEncryption(incoming_msg):
+    testresponse = ""
+    ssh_client= paramiko.SSHClient()  
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    router1 = {'hostname': '192.168.56.101', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
+    router2 = {'hostname': '192.168.56.102', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
+    routers = [router1, router2]
+    for router in routers:
+        ssh_client.connect(**router, look_for_keys=False, allow_agent=False)  
+        print(f'Connecting to {router["hostname"]}')
+
+        shell = ssh_client.invoke_shell()
+
+        shell.send('en\n') 
+        time.sleep(1)
+
+        shell.send('show run \n')
+        time.sleep(1)
+
+        output = shell.recv(10000)
+        output = output.decode('utf-8') 
 
 
+
+        ssh_client.close()
+
+        if "service password-encryption" in output:
+           testresponse += "Passwords are encrypted on" + (f' {router["hostname"]}.\n ') 
+        else:
+            testresponse += "No encryption found on" + (f' {router["hostname"]}!\n ')
+    return testresponse
+def OSPFsetup(incoming_msg):
+    out, err, rc = ansible_runner.run_command(
+        executable_cmd = 'ansible-playbook',
+        cmdline_args=['OSPF_Setup.yaml', '-i', 'hosts.txt'],
+        input_fd=sys.stdin,
+        output_fd=sys.stdout,
+        error_fd=sys.stderr,
+
+        
+    )
+
+    if (int(format(rc)) == 0):
+        return ("OSPF is configured and is using authenticaton")
+    else:
+        return ("Ansible has run into issues, please correct them")
+    
+    
 # Set the bot greeting.
 bot.set_greeting(greeting)
 
@@ -265,7 +318,10 @@ bot.add_command("time", "Look up the current time", useless.current_time)
 bot.add_command("check bgp", "This job checks that all BGP neighbors are in Established state", check_bgp)
 bot.add_command("check interface", "This job will look down interfaces", check_int)
 bot.add_command("monitor interfaces", "This job will monitor interface status in back ground", monitor_int)
+
 bot.add_command("stop monitoring", "This job will stop all monitor job", stop_monitor)
+bot.add_command("Check encryption", "Check for Encryption on the routers", checkEncryption )
+bot.add_command("ospf", "test", OSPFsetup)
 # Every bot includes a default "/echo" command.  You can remove it, or any
 bot.remove_command("/echo")
 
