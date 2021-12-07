@@ -45,7 +45,7 @@ headers = {'Content-Type': 'application/yang-data+json',
 # Bot Details
 bot_email = 'HackBot1@webex.bot' #Fill in your Teams Bot email#
 teams_token = 'MzM3ZjI4NzAtYTgwNS00NzNkLThkOTQtMWQ5N2RkM2UwNmIzMzAzZjFmMjItNzkz_PF84_6eaa6071-6263-409c-8486-26bedfbbdc1a' #Fill in your Teams Bot Token#
-bot_url = "http://2df4-68-117-129-239.ngrok.io" #Fill in the ngrok forwarding address#
+bot_url = "http://03fc-97-90-225-173.ngrok.io" #Fill in the ngrok forwarding address#
 bot_app_name = 'CNIT-381 Network Auto Chat Bot for security testing'
 
 # Create a Bot Object
@@ -216,36 +216,6 @@ def stop_monitor(incoming_msg):
 
     return response
 
-def edit_loopback(incoming_msg):
-    """Return SSH information
-    """
-    connect(
-        host="192.168.56.101", 
-        port=830, 
-        username="cisco", 
-        password="cisco123!", 
-        hostkey_verify=False 
-    )
-    netconf_newloop = """ 
-    <config> 
-    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"> 
-    <interface> 
-    <Loopback> 
-        <name>0</name> 
-        <description>Myloopback 0</description> 
-        <ip> 
-        <address> 
-        <primary> 
-        <address>1.1.1.1</address> 
-        <mask>255.255.255.0</mask> 
-        </primary> 
-        </address> 
-        </ip> 
-    </Loopback> 
-    </interface> 
-    </native> 
-    </config> 
-    """ 
     
 def checkEncryption(incoming_msg):
     testresponse = ""
@@ -255,6 +225,7 @@ def checkEncryption(incoming_msg):
     router1 = {'hostname': '192.168.56.101', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
     router2 = {'hostname': '192.168.56.102', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
     routers = [router1, router2]
+    #for every router listed it checks for services password-encryption
     for router in routers:
         ssh_client.connect(**router, look_for_keys=False, allow_agent=False)  
         print(f'Connecting to {router["hostname"]}')
@@ -270,8 +241,6 @@ def checkEncryption(incoming_msg):
         output = shell.recv(10000)
         output = output.decode('utf-8') 
 
-
-
         ssh_client.close()
 
         if "service password-encryption" in output:
@@ -279,6 +248,46 @@ def checkEncryption(incoming_msg):
         else:
             testresponse += "No encryption found on" + (f' {router["hostname"]}!\n ')
     return testresponse
+
+def enableEncryption(incoming_msg):
+    testresponse = ""
+    ssh_client= paramiko.SSHClient()  
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    router1 = {'hostname': '192.168.56.101', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
+    router2 = {'hostname': '192.168.56.102', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
+    routers = [router1, router2]
+    #for every router listed it enables service password-encryption
+
+    for router in routers:
+        ssh_client.connect(**router, look_for_keys=False, allow_agent=False)  
+        print(f'Connecting to {router["hostname"]}')
+
+        shell = ssh_client.invoke_shell()
+
+        shell.send('en\n') 
+        time.sleep(1)
+
+        shell.send('conf t \n')
+        time.sleep(1)
+
+        shell.send('service password-encryption \n')
+        time.sleep(1)
+
+        shell.send('show run \n')
+        time.sleep(1)
+
+        output = shell.recv(10000)
+        output = output.decode('utf-8') 
+
+        ssh_client.close()
+
+        if "service password-encryption" in output:
+           testresponse += "Passwords are now encrypted on" + (f' {router["hostname"]}.\n ') 
+        else:
+            testresponse += "Error enabling password encryption" + (f' {router["hostname"]}!\n ')
+    return testresponse
+
 def OSPFsetup(incoming_msg):
     out, err, rc = ansible_runner.run_command(
         executable_cmd = 'ansible-playbook',
@@ -300,11 +309,6 @@ def OSPFsetup(incoming_msg):
 bot.set_greeting(greeting)
 
 # Add Bot's Commmands
-#bot.add_command("show SSH", "See the SSH configuration on device.", show_ip_ssh)
-
-bot.add_command("edit Loopback", "See the SSH configuration on device.", edit_loopback)
-
-###########################################################################
 bot.add_command(
     "arp list", "See what ARP entries I have in my table.", arp_list)
 bot.add_command(
@@ -321,7 +325,8 @@ bot.add_command("monitor interfaces", "This job will monitor interface status in
 
 bot.add_command("stop monitoring", "This job will stop all monitor job", stop_monitor)
 bot.add_command("Check encryption", "Check for Encryption on the routers", checkEncryption )
-bot.add_command("ospf", "test", OSPFsetup)
+bot.add_command("enable encryption", "Enables password Encryption on the routers", enableEncryption)
+bot.add_command("ospf", "Enables OSPF Authentication", OSPFsetup)
 # Every bot includes a default "/echo" command.  You can remove it, or any
 bot.remove_command("/echo")
 
