@@ -1,16 +1,28 @@
 # HackBot
 
+This bot was built in two CSR1000v virtual machines with three Host only Network adapters as shown below.
+
+![image](https://user-images.githubusercontent.com/30132417/145153336-22ca423d-95ca-42fe-84a0-5973b1c0e804.png)
+
+Ansible, Genie Robot, and Paramiko have been fully integrated and are elaborated on below.
+
+
 ---
 Webex bot initial configuration
 
 1. First you will need to go to https://developer.webex.com/ and create a chat bot. you will need to generate an eamil and token for the bot.
 after you have done that you will need to open up the 381Bot.py file and add the token and the email into the bot_details area.
 
-#in the 381Bot.py file you will need to add in your router ips and passowrds to conenct.
+	- in the 381Bot.py file you will need to add in your router ips and passwords to connect.
 
 2. Need to insall the ngrok application. After taht need you need to open up a terminal and run the command "ngrok http 5000" command. after this starts you will need to copy the forwarding address and add it the infomation to the "bot_url" section in 381Bot.py. 
 
-3. Need to go to webex and open up and chat window with the bot you created. This will be the email you gave it. After you have opeend up a chat window with you bot you can type /help to get a list of commands then you can use to interact with your network devices. You should now be able to interact with and secure your network with the network monitoring bot.
+3. Need to go to webex and open up and chat window with the bot you created. This will be the email you gave it. After you have opend up a chat window with you bot or invited it to your chatroom you can type /help to get a list of commands then you can use to interact with your network devices. You should now be able to interact with and secure your network with the network monitoring bot.
+
+The command /help can be used for a quick overview of all of the skills of HackBot
+
+![image](https://user-images.githubusercontent.com/30132417/145152603-5f03c9f9-e7ac-4b52-8201-94d0bb6c925b.png)
+
 
 ---
 
@@ -141,6 +153,10 @@ out, err, rc = ansible_runner.run_command(
 7. Add the function to the bot commands.
 
 bot.add_command("ospf", "Enables OSPF Authentication", OSPFsetup)
+
+Example of Ansible bot running a script:
+
+![image](https://user-images.githubusercontent.com/30132417/145153762-245db173-92dc-4faa-b212-7fda553f2202.png)
 
 ---
 
