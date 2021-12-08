@@ -13,6 +13,7 @@ secound you will need to insall the ngrok application. After taht need you need 
 
 Third you need to go to webex and open up and chat window with the bot you created. This will be the email you gave it. After you have opeend up a chat window with you bot you can type /help to get a list of commands then you can use to interact with your network devices. You should now be able to interact with and secure your network with the network monitoring bot.
 
+---
 
 How to set up the paramiko module
 
@@ -142,7 +143,21 @@ out, err, rc = ansible_runner.run_command(
 
 bot.add_command("ospf", "Enables OSPF Authentication", OSPFsetup)
 
+---
 
+How to start setting up Genie Disaster Response
 
+1. Create the script to monitor the vpn connection between static R1 interface G2 (172.168.0.1) and the dynamic R2 interface G2 (starting as 172.168.0.1)
+	-This is done by doing some small modifications to the Monitor_Interfaces module installed with the other Genie Monitor tools.
+	-Modifying the 'learn interfaces' function to output the ip address of the G2 interface allows the 381Bot.py to compare old and new messages works. 
+	
+	    def learn_interface(self):
+		text=""
+		for dev in self.device_list:
+		    self.parser = ShowIpInterfaceBrief(dev)
+		    out = self.parser.parse()
+		    #print(out)
+		    self.intf1 = []
+		    text = out['interface']['GigabitEthernet2']['ip_address']
 
 
