@@ -1,1 +1,135 @@
 # GenMon381
+How to set up the paramiko module
+
+1. Import paramiko and time, we will need these to use paramiko infrastructure and pause to give the router some time to respond.
+
+import paramiko
+import time
+
+2. Set up the module to use SSH to connect to the routers, as well as an array of the 2 router devices we will be configuring.
+
+    ssh_client= paramiko.SSHClient()  
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    router1 = {'hostname': '192.168.56.101', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
+    router2 = {'hostname': '192.168.56.102', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
+    routers = [router1, router2]
+
+3. Create a loop that will run through the array and send the needed commands to get our output and close the SSH connection.
+
+
+        for router in routers:
+        ssh_client.connect(**router, look_for_keys=False, allow_agent=False)  
+        print(f'Connecting to {router["hostname"]}')
+
+        shell = ssh_client.invoke_shell()
+
+        shell.send('en\n') 
+        time.sleep(1)
+
+        shell.send('show run \n')
+        time.sleep(1)
+
+        output = shell.recv(10000)
+        output = output.decode('utf-8') 
+
+        ssh_client.close()
+
+4. Use python to find the command in the running-config. If it exists, it will return that passwords are encrypted along with the router IP. If not,
+then the module will return that the encryption.
+
+       if "service password-encryption" in output:
+           testresponse += "Passwords are encrypted on" + (f' {router["hostname"]}.\n ') 
+        else:
+            testresponse += "No encryption found on" + (f' {router["hostname"]}!\n ')
+    return testresponse
+
+5. Add the module to the bot commands.
+
+bot.add_command("Check encryption", "Check for Encryption on the routers", checkEncryption )
+
+How to set up the ansible module
+
+1. Install the ansible runner module.
+
+	Dev# pip install ansible_runner
+2. Create a name to your OSPF_setup.yaml
+
+--- 
+- name: CONFIGURE OSPF ADDRESSING 
+  hosts: hosts
+  gather_facts: false 
+  connection: local 
+ 
+
+3. Give it a task list with the following paramters.
+  tasks: 
+   - name: OSPF SETUP
+     ios_config:
+        parents: "router ospf 1"
+        lines:
+            - network 192.168.0.0 0.0.0.255 area 0
+
+   - name: SET OSPF authentication  
+     ios_config: 
+       parents: "interface GigabitEthernet1" 
+       lines: 
+         - description OSPF interface
+         - ip ospf authentication-key cisco
+
+   - name: SHOW IPv4 INTERFACE SHOW RUN  
+     ios_command: 
+       commands: 
+         - show run | section interface
+
+     register: output 
+ 
+   - name: SAVE OUTPUT ./ios_configurations/ 
+     copy:  
+       content: "{{ output.stdout[0] }}" 
+       dest: "ios_configurations/Interface_configuration_{{ inventory_hostname }}.txt" 
+   - name: SHOW RUN OSPF  
+     ios_command: 
+       commands: 
+         - show run | section router ospf
+
+     register: output 
+ 
+   - name: SAVE OUTPUT ./ios_configurations/ 
+     copy:  
+       content: "{{ output.stdout[0] }}" 
+       dest: "ios_configurations/OSPF_{{ inventory_hostname }}.txt" 
+
+
+4. Create a new function in the 381.py file.
+
+def OSPFsetup(incoming_msg):
+import ansible_runner
+
+5. Use the ansible-runner module to run an inline command in python.
+
+out, err, rc = ansible_runner.run_command(
+        executable_cmd = 'ansible-playbook',
+        cmdline_args=['OSPF_Setup.yaml', '-i', 'hosts.txt'],
+        input_fd=sys.stdin,
+        output_fd=sys.stdout,
+        error_fd=sys.stderr,
+
+        
+    )
+
+6. Return whether or not the OSPF configuration was successful, otherwise return that it failed.
+
+    if (int(format(rc)) == 0):
+        return ("OSPF is configured and is using authenticaton")
+    else:
+        return ("Ansible has run into issues, please correct them")
+
+7. Add the function to the bot commands.
+
+bot.add_command("ospf", "Enables OSPF Authentication", OSPFsetup)
+
+
+
+
+
