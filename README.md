@@ -3,8 +3,9 @@ How to set up the paramiko module
 
 1. Import paramiko and time, we will need these to use paramiko infrastructure and pause to give the router some time to respond.
 
-import paramiko
-import time
+	import paramiko
+	
+	import time
 
 2. Set up the module to use SSH to connect to the routers, as well as an array of the 2 router devices we will be configuring.
 
