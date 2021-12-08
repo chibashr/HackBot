@@ -114,10 +114,7 @@ out, err, rc = ansible_runner.run_command(
         cmdline_args=['OSPF_Setup.yaml', '-i', 'hosts.txt'],
         input_fd=sys.stdin,
         output_fd=sys.stdout,
-        error_fd=sys.stderr,
-
-        
-    )
+        error_fd=sys.stderr, )
 
 6. Return whether or not the OSPF configuration was successful, otherwise return that it failed.
 
