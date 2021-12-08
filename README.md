@@ -1,4 +1,19 @@
 # GenMon381
+
+#requirement
+#available routes to connect to
+#SSH setup on the devices
+
+First you will need to go to https://developer.webex.com/ and create a chat bot. you will need to generate an eamil and token for the bot.
+after you have done that you will need to open up the 381Bot.py file and add the token and the email into the bot_details area.
+
+#in the 381Bot.py file you will need to add in your router ips and passowrds to conenct.
+
+secound you will need to insall the ngrok application. After taht need you need to open up a terminal and run the command "ngrok http 5000" command. after this starts you will need to copy the forwarding address and add it the infomation to the "bot_url" section in 381Bot.py. 
+
+Third you need to go to webex and open up and chat window with the bot you created. This will be the email you gave it. After you have opeend up a chat window with you bot you can type /help to get a list of commands then you can use to interact with your network devices. You should now be able to interact with and secure your network with the network monitoring bot.
+
+
 How to set up the paramiko module
 
 1. Import paramiko and time, we will need these to use paramiko infrastructure and pause to give the router some time to respond.
