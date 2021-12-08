@@ -24,6 +24,7 @@ import useless_skills as useless
 import useful_skills as useful
 from BGP_Neighbors_Established import BGP_Neighbors_Established
 from Monitor_Interfaces import MonitorInterfaces
+from Disaster_Monitor import DisasterMonitor
 
 
 # Create  thread list
@@ -303,7 +304,106 @@ def OSPFsetup(incoming_msg):
         return ("OSPF is configured and is using authenticaton")
     else:
         return ("Ansible has run into issues, please correct them")
-    
+ def stop_monitor(incoming_msg):
+    """Monitor interfaces in a thread
+    """
+    response = Response()
+    response.text = "Stopping all Monitors...\n\n"
+    global exit_flag
+    exit_flag = True
+    time.sleep(5)
+    response.text += "Done!..\n\n"
+
+    return response
+
+def check_vpn(incoming_msg):
+    """Find down interfaces
+    """
+    response = Response()
+    response.text = "Gathering  Information...\n\n"
+
+    dmon = DisasterMonitor()
+    status = dmon.setup('testbed/disastercheck.yml')
+
+    status = dmon.learn_interface()
+    response.text += status
+    return response
+
+def monitor_vpn(incoming_msg):
+    """Monitor interfaces in a thread
+    """
+    response = Response()
+    response.text = "Monitoring VPN connection...\n\n"
+    monitor_vpn_job(incoming_msg)
+    th = threading.Thread(target=monitor_vpn_job, args=(incoming_msg,))
+    threads.append(th)  # appending the thread to the list
+
+    # starting the threads
+    for th in threads:
+        th.start()
+
+    # waiting for the threads to finish
+    for th in threads:
+        th.join()
+
+    return response
+
+def monitor_vpn_job(incoming_msg):
+    response = Response()
+    msgtxt_old=""
+    global exit_flag
+    while exit_flag == False:
+        msgtxt = check_vpn(incoming_msg)
+        if msgtxt_old != msgtxt:
+            print(msgtxt.text)
+            useless.create_message(incoming_msg.roomId, msgtxt.text)
+        msgtxt_old = msgtxt
+        time.sleep(20)
+
+    print("exited thread")
+    exit_flag = False
+
+
+    return response
+    fix_vpn(str(response))
+
+def fix_vpn(updated_ip):
+    testresponse = ""
+    ssh_client= paramiko.SSHClient()  
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    router2 = {'hostname': '192.168.56.102', 'port': '22', 'username':'cisco', 'password':'cisco123!'}
+    routers = [router2]
+
+    for router in routers:
+        ssh_client.connect(**router, look_for_keys=False, allow_agent=False)  
+        print(f'Connecting to {router["hostname"]}')
+
+        shell = ssh_client.invoke_shell()
+
+        shell.send('en\n') 
+        time.sleep(1)
+        shell.send('conf t \n')
+        time.sleep(1)
+        shell.send('crypto isakmp key cisco address ' + str(updated_ip) + '\n')
+        time.sleep(1)
+        shell.send('crypto isakmp key cisco address ' + str(updated_ip) + '\n')
+        time.sleep(1)
+        shell.send('crypto ipsec transform-set tran1 esp-3des esp-md5-hmac \n')
+        time.sleep(1)
+        shell.send('set peer ') + str(updated_ip) + '\n'
+        time.sleep(1)
+        shell.send('exit \n')
+        time.sleep(1)
+
+        output = shell.recv(10000)
+        output = output.decode('utf-8') 
+
+        ssh_client.close()
+
+        response = 'Crisis averted'
+
+    return response
     
 # Set the bot greeting.
 bot.set_greeting(greeting)
