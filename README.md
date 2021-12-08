@@ -148,7 +148,7 @@ bot.add_command("ospf", "Enables OSPF Authentication", OSPFsetup)
 How to start setting up Genie Disaster Response
 
 1. Create the script to monitor the vpn connection between static R1 interface G2 (172.168.0.1) and the dynamic R2 interface G2 (starting as 172.168.0.1)
-2. 
+
 	-This is done by doing some small modifications to the Monitor_Interfaces module installed with the other Genie Monitor tools.
 	
 	-Modifying the 'learn interfaces' function to output the ip address of the G2 interface allows the 381Bot.py to compare old and new messages works. 
@@ -161,5 +161,14 @@ How to start setting up Genie Disaster Response
 		    #print(out)
 		    self.intf1 = []
 		    text = out['interface']['GigabitEthernet2']['ip_address']
+		    
+2. Once the script is finished, it must be implimented into the 381Bot.py file.
 
+	-Add a function called check_vpn to mimic the pre-existing check_int function. This allows the script to execute (after adding the command to the bottom of the file with the bot.addcommand() function.
+	
+	-Add a function called monitor_vpn that begins the monitoring, as well as a function to start a continuous job. 
+
+3. This next part will be included in the next update
+
+	-Add a function to the 381Bot.py to fix the vpn if the responses of the monitoring thread dont match up. This will make it easy to leave it running with no worries about if the dynamic address will change.
 
