@@ -427,6 +427,7 @@ bot.add_command("stop monitoring", "This job will stop all monitor job", stop_mo
 bot.add_command("Check encryption", "Check for Encryption on the routers", checkEncryption )
 bot.add_command("enable encryption", "Enables password Encryption on the routers", enableEncryption)
 bot.add_command("ospf", "Enables OSPF Authentication", OSPFsetup)
+bot.add_command("monitor vpn", "IN DEVELOPMENT: Monitors VPN and automatically fixes changes in IPs", monitor_vpn)
 # Every bot includes a default "/echo" command.  You can remove it, or any
 bot.remove_command("/echo")
 
